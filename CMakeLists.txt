@@ -4,11 +4,37 @@ project(libfacedetection)
 
 cmake_minimum_required(VERSION 2.8.12)
 
+if (MSVC)
+    add_definitions(-D_XKEYCHECK_H)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    #add_definitions(-D_UNICODE -DUNICODE)
+    add_definitions("/wd4819")
+    foreach(flag_var
+            CMAKE_C_FLAGS
+            CMAKE_C_FLAGS_DEBUG
+            CMAKE_C_FLAGS_RELEASE
+            CMAKE_C_FLAGS_MINSIZEREL
+            CMAKE_C_FLAGS_RELWITHDEBINFO
+            CMAKE_CXX_FLAGS
+            CMAKE_CXX_FLAGS_DEBUG
+            CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_CXX_FLAGS_MINSIZEREL
+            CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        )
+        if(${flag_var} MATCHES "/MD")
+            string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+        endif(${flag_var} MATCHES "/MD")
+    endforeach(flag_var)
+    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    add_definitions(-DBUILD_TEST)
+endif()
+
 option(ENABLE_NEON "whether use neon, if use arm please set it on" OFF)
 option(ENABLE_AVX512 "use avx512" OFF)
-option(ENABLE_AVX2 "use avx2" ON)
-option(DEMO "build the demo" OFF)
-option(USE_OPENMP "Use OpenMP" ON)
+option(ENABLE_AVX2 "use avx2" OFF)
+option(DEMO "build the demo" ON)
+option(USE_OPENMP "Use OpenMP" OFF)
 
 if (BUILD_SHARED_LIBS)
 	add_definitions(-DBUILD_SHARED_LIBS)
@@ -152,19 +178,32 @@ write_basic_package_version_file(
 install(FILES "${CMAKE_BINARY_DIR}/${fdt_lib_name}ConfigVersion.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${fdt_lib_name}")
 
 # Create demo. OpenCV is requred.
-if (DEMO)
+# Add OpenCV Static Libaries.
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+IF (WIN32)
+    # If want to use static library, change the path to
+    # ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/)
+    set(OpenCV_LIBS opencv_world341)
+ELSE ()
+    # need to install opencv in mac, can not use repo-lib.
+    # set(OpenCV_DIR /usr/local/Cellar/opencv/3.4.3/share/OpenCV)
+    set(OpenCV_DIR /opt/homebrew/Cellar/opencv@3/3.4.14_3/share/OpenCV)
     find_package(OpenCV REQUIRED)
-    include_directories(${OpenCV_INCLUDE_DIRS})
+    message(STATUS "OpenCV library status:")
+    message(STATUS "    version: ${OpenCV_VERSION}")
+    message(STATUS "    libraries: ${OpenCV_LIBS}")
+    message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
+    set(SYS_LIB pthread m)
+ENDIF ()
 
-    add_executable(detect-image-demo ${fdt_base_dir}/example/detect-image.cpp)
-    target_link_libraries(detect-image-demo ${fdt_lib_name} ${OpenCV_LIBS})
-
-    add_executable(detect-camera-demo ${fdt_base_dir}/example/detect-camera.cpp)
-    target_link_libraries(detect-camera-demo ${fdt_lib_name} ${OpenCV_LIBS})
-    
-    add_executable(benchmark ${fdt_base_dir}/example/benchmark.cpp)
-    target_link_libraries(benchmark ${fdt_lib_name} ${OpenCV_LIBS})
-endif()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/opencv/include/)
+add_executable(detect-image-demo ${fdt_base_dir}/example/detect-image.cpp)
+target_link_libraries(detect-image-demo ${fdt_lib_name} ${OpenCV_LIBS})
+add_executable(detect-camera-demo ${fdt_base_dir}/example/detect-camera.cpp)
+target_link_libraries(detect-camera-demo ${fdt_lib_name} ${OpenCV_LIBS})
+add_executable(benchmark ${fdt_base_dir}/example/benchmark.cpp)
+target_link_libraries(benchmark ${fdt_lib_name} ${OpenCV_LIBS})
 
 if (GSTREAMER)
     find_package(OpenCV REQUIRED)
