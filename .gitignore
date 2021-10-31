@@ -33,7 +33,6 @@ bin/
 Makefile.in
 aclocal.m4
 config.guess
-config.h
 config.h.in
 config.h.in~
 config.log
