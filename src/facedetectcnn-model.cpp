@@ -48,7 +48,7 @@ cv::TickMeter cvtm;
 #define TIME_END(FUNCNAME) cvtm.stop(); printf(FUNCNAME);printf("=%g\n", cvtm.getTimeMilli());
 #else
 #define TIME_START
-#define TIME_END(FUNCNAME)
+#define TIME_END(FUNCNAME)    printf("[DEBUG] %s\n", FUNCNAME);
 #endif
 
 
@@ -310,7 +310,9 @@ int * facedetect_cnn(unsigned char * result_buffer, //buffer memory for storing 
     result_buffer[2] = 0;
     result_buffer[3] = 0;
 
+    printf("[DEBUG] objectdetect_cnn begin\n");
     vector<FaceRect> faces = objectdetect_cnn(rgb_image_data, width, height, step);
+    printf("[DEBUG] objectdetect_cnn end\n");
 
     int num_faces =(int)faces.size();
     num_faces = MIN(num_faces, 256);

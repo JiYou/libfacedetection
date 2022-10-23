@@ -185,6 +185,7 @@ IF (WIN32)
     # ${CMAKE_CURRENT_SOURCE_DIR}/lib/win32
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/opencv/lib/)
     set(OpenCV_LIBS opencv_world341)
+    set(OpenCV_LIBS_D opencv_world341d)
 ELSE ()
     # need to install opencv in mac, can not use repo-lib.
     # set(OpenCV_DIR /usr/local/Cellar/opencv/3.4.3/share/OpenCV)
@@ -198,10 +199,14 @@ ELSE ()
 ENDIF ()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/opencv/include/)
+
 add_executable(detect-image-demo ${fdt_base_dir}/example/detect-image.cpp)
 target_link_libraries(detect-image-demo ${fdt_lib_name} ${OpenCV_LIBS})
+
 add_executable(detect-camera-demo ${fdt_base_dir}/example/detect-camera.cpp)
-target_link_libraries(detect-camera-demo ${fdt_lib_name} ${OpenCV_LIBS})
+target_link_libraries(detect-camera-demo ${fdt_lib_name} debug ${OpenCV_LIBS_D})
+target_link_libraries(detect-camera-demo ${fdt_lib_name} optimized ${OpenCV_LIBS})
+
 add_executable(benchmark ${fdt_base_dir}/example/benchmark.cpp)
 target_link_libraries(benchmark ${fdt_lib_name} ${OpenCV_LIBS})
 

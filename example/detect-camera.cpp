@@ -46,13 +46,7 @@ using namespace cv;
 
 int main(int argc, char* argv[])
 {
-    if(argc != 2)
-    {
-        printf("Usage: %s <camera index>\n", argv[0]);
-        return -1;
-    }
-
-	int * pResults = NULL; 
+    int * pResults = NULL; 
     //pBuffer is used in the detection functions.
     //If you call functions in multiple threads, please create one buffer for each thread!
     unsigned char * pBuffer = (unsigned char *)malloc(DETECT_BUFFER_SIZE);
@@ -66,15 +60,16 @@ int main(int argc, char* argv[])
     VideoCapture cap;
     Mat im;
     
-    if( isdigit(argv[1][0]))
-    {
-        cap.open(argv[1][0]-'0');
+
+        cap.open(0);
         if(! cap.isOpened())
         {
             cerr << "Cannot open the camera." << endl;
             return 0;
         }
-    }
+        else {
+                printf("open camera success!\n");
+        }
 
     if( cap.isOpened())
     {
@@ -93,8 +88,9 @@ int main(int argc, char* argv[])
             TickMeter cvtm;
             cvtm.start();
 
+            printf("facedetect_cnn begin\n");
             pResults = facedetect_cnn(pBuffer, (unsigned char*)(image.ptr(0)), image.cols, image.rows, (int)image.step);
-            
+            printf("facedetect_cnn over\n");
             cvtm.stop();    
             printf("time = %gms\n", cvtm.getTimeMilli());
             
