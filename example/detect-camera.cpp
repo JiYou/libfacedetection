@@ -88,9 +88,7 @@ int main(int argc, char* argv[])
             TickMeter cvtm;
             cvtm.start();
 
-            printf("facedetect_cnn begin\n");
             pResults = facedetect_cnn(pBuffer, (unsigned char*)(image.ptr(0)), image.cols, image.rows, (int)image.step);
-            printf("facedetect_cnn over\n");
             cvtm.stop();    
             printf("time = %gms\n", cvtm.getTimeMilli());
             
